@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,22 +38,45 @@ public class CommentApiController {
 	}
 	
 	// 2. 댓글 생성(POST)
+	// Post http://localhost:9090/api/articles/4/comments 
+	// 입력 data : {"article_id":4, "nickname":"Hoon", "body":"이프 온리"}
+	// 결과 {"id": null, "article_id": 4, "nickname": "Hoon","body": "이프 온리"	}
+	// 에러 입력 : {id: 4, "article_id": 4, "nickname": "Hoon","body": "이프 온리"	}
+	// 결과  400(Bad Request) 에러 -  {"id": 4,  입력데이터 키 json type "" 안에 저장 
+	// 에러 입력 : {"id": 4, "article_id": 4, "nickname": "Hoon","body": "이프 온리"	}
+	// 결과  500  message : "댓글 생성실패! 댓글의 id가 없어야합니다",
 	@PostMapping("/api/articles/{articleId}/comments")	
 	public ResponseEntity<CommentDto> create(
-		  @PathVariable	Long        articleId,   // {articleId}  : 게시글번호
+		  @PathVariable	Long         articleId,  // {articleId}  : 게시글번호
 		  @RequestBody  CommentDto   dto	         // 입력된 자료들 input, select
 		  ) {
 		CommentDto createdDto  =  commentService.create(articleId, dto);
 		// 결과 응답
 		return ResponseEntity.status(HttpStatus.OK).body( dto );
 	}
-	
-	
+		
 	// 3. 댓글 수정(Patch)
-	//@PatchMapping("/api/comments/{id}")
+	// Patch  http://localhost:9090/api/comments/7
+	// 수정전 데이터 {"article_id":6, "id":7,"body":"조깅", "nickname":"Park"}
+	// 입력데이터 { "article_id":6, "id":7,"body":"수영", "nickname":"Park2"}    }
+	@PatchMapping("/api/comments/{id}")
+	public ResponseEntity<CommentDto> update(
+			@PathVariable  Long        id,
+			@RequestBody   CommentDto  dto   // 수정할 데이터를 가지고있다
+			) {
+		
+		CommentDto  udpateDto = commentService.update(id, dto);		
+		return ResponseEntity.status(HttpStatus.OK).body( udpateDto );	
+		
+	}
 	
 	// 4. 댓글 삭제(Delete)
-	//@DeleteMapping("/api/comments/{id}")
+	// Delete  http://localhost:9090/api/comments/7
+	@DeleteMapping("/api/comments/{id}")
+	public   ResponseEntity<CommentDto>  delete(@PathVariable  Long  id ) {
+		CommentDto deletedDto = commentService.delete( id );
+		return  ResponseEntity.status(HttpStatus.OK).body(deletedDto); 
+	}
 }
 
 
